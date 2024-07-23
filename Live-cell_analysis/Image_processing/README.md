@@ -2,11 +2,6 @@
 
 This repository contains five files for chromatic aberration correction and spot localization on 2-colors images
 
-## License
-
-MIT
-
-The plugin is distributed under the license MIT on an "as is" basis, without warranties or conditions of any kind.
 
 ## Requirements
 

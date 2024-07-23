@@ -1,12 +1,7 @@
-# Spots localization
+# 1D simulations
 
 This repository allows to simulate in 1D a topologically associating domain (TAD) of a given size. It simulates cohesin mediated loops randomly loaded along the chromatin with a given density. Loops extrude chromatin at a given velocity for a given processivity in average. The loop can stop at CTCF locations for a time defined in CTCF_positions folder and determined using CHIP-seq data.
 
-## License
-
-MIT
-
-These scripts are distributed under the license MIT on an "as is" basis, without warranties or conditions of any kind.
 
 ## Requirements
 
