@@ -1,6 +1,6 @@
 # Spots localization
 
-This repository contains four files for chromatic aberration correction and spot localization on 2-colors images
+This repository contains five files for chromatic aberration correction and spot localization on 2-colors images
 
 ## License
 
