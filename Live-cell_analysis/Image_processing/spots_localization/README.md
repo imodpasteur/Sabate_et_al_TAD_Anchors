@@ -34,4 +34,9 @@ The files are executed in the following order to track spots in 2-channel images
 
 5. Run the 'Pair TrackMate files' Fiji plugin to pair tracks from each channel together, using the tracks corrected for chromatic aberrations.
 
-5. Finally, relocalization.py allows to improve trackmate localization by fitting a Gaussian model to fluorescent spots, and estimates the Cramér Rao bounds. These bounds define the localization precision of each localization. It takes as input a .tif file (with shifts correction), the .csv file from the 'Pair TrackMate files' plugin and the registration parameters provided by Chromagnon. Before relocalization of spots, we linearly interpolated the positions of missing spots, using the known positions of spots before and after missing spots.
+6. Finally, relocalization.py allows to improve trackmate localization by fitting a Gaussian model to fluorescent spots, and estimates the Cramér Rao bounds. These bounds define the localization precision of each localization. It takes as input a .tif file (with shifts correction), the .csv file from the 'Pair TrackMate files' plugin and the registration parameters provided by Chromagnon. Before relocalization of spots, we linearly interpolated the positions of missing spots, using the known positions of spots before and after missing spots.
+
+## License
+MIT
+The code is distributed under the license MIT on an "as is" basis, without warranties or conditions of any kind.
+
