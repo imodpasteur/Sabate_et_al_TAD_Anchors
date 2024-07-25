@@ -1,4 +1,4 @@
-# Spots localization
+# Spot localization
 
 This repository contains five files for chromatic aberration correction and spot localization on 2-colors images
 
