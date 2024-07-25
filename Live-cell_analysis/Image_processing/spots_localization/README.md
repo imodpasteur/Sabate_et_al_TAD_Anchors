@@ -1,6 +1,6 @@
 # Spot localization
 
-This repository contains files for chromatic aberration correction and spot localization on 2-channel images
+This repository contains files for chromatic aberration correction and spot localization on 2-channel images.
 
 
 ## Requirements
