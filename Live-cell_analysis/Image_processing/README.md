@@ -5,7 +5,7 @@ This repository contains five files for chromatic aberration correction and spot
 
 ## Requirements
 
-This package is developed in python and requires the following libraries
+This package is developed in python and requires the following libraries:
 
 numpy
 pandas
