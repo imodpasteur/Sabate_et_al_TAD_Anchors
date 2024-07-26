@@ -27,7 +27,7 @@ sizeKb=566
 totalAreaMb=2.6
 show=True
 folderpath='./exampleOutput'
-pathCTCF="./CTCF_positions/Cell_lines_dict_Simulated_CTCFsites_pval5E-6_append_normalized_to_median_FC_withAnchors.pkl"
+pathCTCF="./CTCF_positions/CTCF_sites_Cell_Lines.pkl"
 
 deltaT=10
 totaltime=100 #simulate 100 time points

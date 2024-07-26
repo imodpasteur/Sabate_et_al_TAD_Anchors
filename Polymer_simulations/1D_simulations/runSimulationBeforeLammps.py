@@ -61,7 +61,7 @@ cell_line=utils.getCellLine(sizeKb)
 folderLammpsFiles2=utils.getPathBatchLammps(sizeKb,folderLammpsFiles)
 
 output_simulation_path=os.path.join(output_simulation_path,cell_line)
-pathCTCF="./CTCF_positions/Cell_lines_dict_Simulated_CTCFsites_pval5E-6_append_normalized_to_median_FC_withAnchors.pkl"
+pathCTCF="./CTCF_positions/CTCF_sites_Cell_Lines.pkl"
 
 
 ###### lammpsRatio=3/2000 #3 seconds for 2000 time steps
