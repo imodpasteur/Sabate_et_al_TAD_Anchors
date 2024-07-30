@@ -573,13 +573,20 @@ class SpeedFitting:
         x_time2D : array
             Timepoints (in seconds).
         data : array
-            Mean normalized squared distances.
+            Mean weighted squared distances.
         datastd : array
-            Mean normalized standard error of the mean.
+            Mean weighted standard error of the mean.
         parametersFitted : Array of booleans, optional
             Whether [t_extr, R2int, R2plateau] should be fitted (True) or fixed (False). The default is [True,True,True].
         with_multi_init_of_textr_and_R2plateau : boolean, optional
             True if perform mult initialization of t_extr and R2int, which minimizes the risk of local minima during fitting. The default is True.
+
+        Returns
+        -------
+        finalP : float
+            Parameters of the piecewise linear model (t_extr, R2int, R2plateau).
+        loglik : array
+            Log-likelihood.
         """
         self.parametersFitted=parametersFitted
         #function to minimize
@@ -637,8 +644,8 @@ class SpeedFitting:
                 pToFit.append(self.b)
             if parametersFitted[2]:
                 pToFit.append(self.R2)
-            p_2slopes=least_squares(fun_loglik, pToFit, args=(x_time_list, y_data_list,datastd_list)).x
-            lossinit=np.power(fun_loglik(pToFit,x_time_list, y_data_list,datastd_list),2)
+            p_2slopes=least_squares(fun_loss, pToFit, args=(x_time_list, y_data_list,datastd_list)).x
+            lossinit=np.power(fun_loss(pToFit,x_time_list, y_data_list,datastd_list),2)
             loss=np.power(fun_loss(p_2slopes,x_time_list, y_data_list),2)
             lik=np.divide(loss,np.power(datastd_list,2))
             mini_lik=np.sum(lik)
@@ -694,14 +701,6 @@ class SpeedFittingPolynomial:
 
 
 
-
-
-
-
-
-
-
-
 def computeBIC(log_lik,k,n):
     bic=np.log(n)*k-2*log_lik 
     return(bic)
@@ -722,7 +721,7 @@ def fit_ClosingRate_TakingIntoAccount_LocalizationPrecision(close_states, scores
     mean_R02 : float
         Mean squared distance in RAD21-depleted cells minus the contribution of localization errors, used to convert genomic distances into um².
     mean_Std_prec : Array of float
-        Mean and standard deviation of the Gaussian used to convert scores to localization precision.
+        Mean and standard deviation of the Gaussian used to convert localization precision to scores.
     textr_is_fitted : boolean, optional
         True if want to fit t_extr, False if fixing t_extr. The default is True.
     R2int_is_fitted : boolean, optional
@@ -775,7 +774,6 @@ def fit_ClosingRate_TakingIntoAccount_LocalizationPrecision(close_states, scores
     scoreisnan = np.isnan(scores)  # nan score
     # put score=0 when score is nan (interpolated distance)
     scores[scoreisnan] = 0
-    mean_scores = np.transpose([np.mean(scores, axis=1)]) # mean of scores
 
     # reshape X from 2D to 1D
     x_time2D = np.transpose([x_time]*nbtrack)
@@ -817,7 +815,6 @@ def fit_ClosingRate_TakingIntoAccount_LocalizationPrecision(close_states, scores
     information_criterion = {}
     information_criterion['1_parameter'] = (bic_poly0, parameters_poly0, slope_poly0)
     information_criterion['3_parameter'] = (bic_2slopes, parameters_2slopes, closing_rate_2slopes)
-
     return closing_rate_2slopes, R2_estimated, slope_2slopes, x_time, t_extr, R2int, information_criterion
 
 

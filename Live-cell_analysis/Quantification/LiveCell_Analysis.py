@@ -85,7 +85,6 @@ def get_squared_distances_minus_localization_errors_from_distances_and_scores(di
     
     # Compute weighted standard error of the mean
     sh = np.shape(closed_states_squared)
-    lentrack = sh[0]
     nbtrack = sh[1]
     sem_weighted = np.divide(np.sqrt(np.divide(np.sum(np.multiply(np.power(np.transpose(np.subtract(np.transpose(distances), norm_mean_weighted_dist)), 2), scores),axis=1), np.sum(scores,axis=1))), np.sqrt(nbtrack))
     return norm_mean_weighted_dist, sem_weighted
@@ -97,28 +96,29 @@ def get_squared_distances_minus_localization_errors_from_distances_and_scores(di
 Cell_line = 'L2'
 
 if Cell_line == 'L1':
-    tracks_WT = pd.read_csv('//atlas.pasteur.fr/Imod-grenier/Thomas/Documents/Papiers/Live/Prep_Submission/Data_to_submit/Live-tracking/L1_NoAuxin_QC.csv', sep=';')
-    tracks_deplete = pd.read_csv('//atlas.pasteur.fr/Imod-grenier/Thomas/Documents/Papiers/Live/Prep_Submission/Data_to_submit/Live-tracking/L1_Auxin2h_QC.csv', sep=';')
+    tracks_WT = pd.read_csv('/Path_To_Filtered_Dataset/L1_NoAuxin_QC.csv', sep=';')
+    tracks_deplete = pd.read_csv('/Path_To_Filtered_DatasetL1_Auxin2h_QC.csv', sep=';')
     size_loop = 345  # in kb
     
 if Cell_line == 'L2':
-    tracks_WT = pd.read_csv('/Volumes/Imod-grenier/Thomas/Documents/Papiers/Live/Prep_Submission/Data_to_submit/Live-tracking/L2_NoAuxin_QC.csv', sep=';')
-    tracks_deplete = pd.read_csv('/Volumes/Imod-grenier/Thomas/Documents/Papiers/Live/Prep_Submission/Data_to_submit/Live-tracking/L2_Auxin2h_QC.csv', sep=';')
+    tracks_WT = pd.read_csv('/Path_To_Filtered_Dataset/L2_NoAuxin_QC.csv', sep=';')
+    tracks_deplete = pd.read_csv('/Path_To_Filtered_Dataset/L2_Auxin2h_QC.csv', sep=';')
     size_loop = 566  # in kb
 
 if Cell_line == 'T1':
-    tracks_WT = pd.read_csv('//atlas.pasteur.fr/Imod-grenier/Thomas/Documents/Papiers/Live/Prep_Submission/Data_to_submit/Live-tracking/T1_NoAuxin_QC.csv', sep=';')
-    tracks_deplete = pd.read_csv('//atlas.pasteur.fr/Imod-grenier/Thomas/Documents/Papiers/Live/Prep_Submission/Data_to_submit/Live-tracking/T1_Auxin2h_QC.csv', sep=';')
+    tracks_WT = pd.read_csv('/Path_To_Filtered_Dataset/T1_NoAuxin_QC.csv', sep=';')
+    tracks_deplete = pd.read_csv('/Path_To_Filtered_Dataset/T1_Auxin2h_QC.csv', sep=';')
     size_loop = 918  # in kb
 
 if Cell_line == 'No_Loop':
-    tracks_WT = pd.read_csv('//atlas.pasteur.fr/Imod-grenier/Thomas/Documents/Papiers/Live/Prep_Submission/Data_to_submit/Live-tracking/NoLoop_NoAuxin_QC.csv', sep=';')
-    tracks_deplete = pd.read_csv('//atlas.pasteur.fr/Imod-grenier/Thomas/Documents/Papiers/Live/Prep_Submission/Data_to_submit/Live-tracking/NoLoop_Auxin2h_QC.csv', sep=';')
+    tracks_WT = pd.read_csv('/Path_To_Filtered_Dataset/NoTAD_NoAuxin_QC.csv', sep=';')
+    tracks_deplete = pd.read_csv('/Path_To_Filtered_Dataset/NoTAD_Auxin2h_QC.csv', sep=';')
     size_loop = 576  # in kb
     
-tracks_adjacent = pd.read_csv('/Volumes/Imod-grenier/Thomas/Documents/Papiers/Live/Prep_Submission/Data_to_submit/Live-tracking/Adjacent_QC.csv', sep=';')
+tracks_adjacent = pd.read_csv('/Path_To_Filtered_Dataset/Adjacent_QC.csv', sep=';')
 
-# %% Pipeline
+
+# %% Segmentation of proximal states
 
 # Add NAN in missing frames and interpolate distances
 tracks_na = Add_NA_in_missing_frames_And_interpolate(tracks_WT.copy(), True)
@@ -127,20 +127,15 @@ tracks_adjacent_na = Add_NA_in_missing_frames_And_interpolate(tracks_adjacent.co
 
 if Cell_line == 'L2':
     thresh_space = 0.218277245599599
-    quantile_temporal = 0.823194580078125
 if Cell_line == 'T1':
     thresh_space = 0.2363151398746736
-    quantile_temporal = 0.8678861788617107
 if Cell_line == 'L1':
     thresh_space = 0.19945400124787457
-    quantile_temporal = 0.8253717890945071
 if Cell_line == 'No_Loop':
     thresh_space = 0.2204404763636802
-    quantile_temporal = 0.4616087751368677
+thresh_space_adjacent = 0.24938339452179015   # In um
+time_threshold = 6     # In frames
 
-thresh_space_adjacent = 0.24938339452179015
-
-All_len_thresh_per_traj, time_threshold = get_higher_number_of_consecutive_frames_under_threshold_dist(tracks_deplete_na.copy(), thresh_space, quantile_temporal)
 
 # Segment proximal states
 data = tracks_na.copy()
@@ -221,13 +216,12 @@ plt.xlim((0, 80))
 plt.legend(fontsize=22, frameon=False)
 
 # %% Fit closing rate
-# ISSUE
 # Retrieve proximal states in untreated time series and align distances on proximal states
 window = 50  # size of fitting window (in frames)
 closed_tracks, Scores = retrieve_closed_states_without_closed_states_before_wdw_timepoints_fulltracksOnly_WithScores(filtered_WT, start_closed_state, window)
 Closed_arr, Score_arr = make_array_of_distances_scores_from_dict(closed_tracks, Scores, window)
 
-# Randomly shuffled data
+# Randomly shuffle data
 tracks_rdm = randomize_each_timepoint_in_df(filtered_WT.copy())
 # Detect proximal states in randomly shuffled data
 masked_rdm_tracks, start_closed_state_notfiltered_rdm, end_closed_state_notfiltered_rdm = get_closed_state_in_tracks(tracks_rdm.copy(), thresh_space, time_threshold)
@@ -243,7 +237,7 @@ frame_s = 1 / s_frame    # frames / second
 list_dist = list(filtered_deplete['Distance'])
 list_precision = list(filtered_deplete['precision_Distance'])
 R02 = np.nanmean([list_dist[i]**2 - list_precision[i]**2 for i in range(len(list_dist))])
-Mean_std_prec = np.loadtxt('/Volumes/Imod-grenier/Thomas/Documents/Papiers/Live/Prep_Submission/Code_to_submit/240626_Mean_Std_prec_All_Cell_Lines.txt')
+Mean_std_prec = np.loadtxt('/Path_To_MeanAndStd_All_Cell_Lines/240626_Mean_Std_prec_All_Cell_Lines.txt')
 
 closing_rate_3param, R2_estimate, slope_avg, x, t_extr, R2int_fit, criterion = fit_ClosingRate_TakingIntoAccount_LocalizationPrecision(Closed_arr[:window_fit, :], Score_arr[:window_fit, :], frame_s, size_loop, R02, Mean_std_prec)
 closing_rate, nbr_param = get_closing_rates_based_on_criterion(criterion)
@@ -672,6 +666,7 @@ Model_NoAuxin = Models(Var_x_NoAuxin, Var_y_NoAuxin, Var_z_NoAuxin)
 Model_Auxin = Models(Var_x_Auxin, Var_y_Auxin, Var_z_Auxin)
 Model_Closed = Models(Var_x_Closed, Var_y_Closed, Var_z_Closed)
 
+# Parameters of the analytical model
 Columns_To_Keep = ['Track_pair', 'Track_1_id', 'Track_1_id.1', 'Frame', 'Spot_1_X', 'Spot_1_Y', 'Spot_1_Z', 'Spot_2_X', 'Spot_2_Y', 'Spot_2_Z']
 maxibin = 2.5        # total width of distributions
 binstep = 0.01       # Binning size
@@ -682,7 +677,7 @@ lenvect = len(xyz)//3
 
 Fitted_Closed, Fitted_WT, Fitted_Open = estimate_fraction_loop_states(File_Closed, File_Open, File_WT, Model_Closed, Model_NoAuxin, Model_Auxin, Columns_To_Keep)
 
-
+# Print results
 print('SEGMENTED PROXIMAL STATES: Fraction Proximal=%.3f, Fraction extruding=%.2f, Fraction open=%.2f' % (Fitted_Closed[0], Fitted_Closed[1], Fitted_Closed[2]))
 print('UNTREATED CELLS: Fraction Proximal=%.3f, Fraction extruding=%.2f, Fraction open=%.2f' % (Fitted_WT[0], Fitted_WT[1], Fitted_WT[2]))
 print('AUXIN-TREATED CELLS: Fraction Proximal=%.3f, Fraction extruding=%.2f, Fraction open=%.2f' % (Fitted_Open[0], Fitted_Open[1], Fitted_Open[2]))
