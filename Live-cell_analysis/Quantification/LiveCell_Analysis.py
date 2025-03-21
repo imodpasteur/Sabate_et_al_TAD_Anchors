@@ -9,6 +9,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
+import math
 import itertools
 from matplotlib.patches import Rectangle
 from matplotlib import ticker
@@ -19,7 +20,7 @@ from Utils_Live import *
 
 
 
-def get_closing_rates_based_on_criterion(crit):
+def get_closing_rates_based_on_criterion(crit, threshold_t_extr):
     """
     Parameters
     ----------
@@ -35,18 +36,14 @@ def get_closing_rates_based_on_criterion(crit):
         number of parameter of the model associated with the lowest BIC value.
     """
     if hasattr(crit, '__len__'):     # check if crit is not nan
-        list_bic = [crit['1_parameter'][0], crit['3_parameter'][0]]
-        min_val, idx_min = min((val, idx) for (idx, val) in enumerate(list_bic))    # Get index of the lowest BIC value.
-        if idx_min == 0:     # Lowest BIC is 1-parameter fit
-            closing_rate = 0
-            fit_used = 1
-        if idx_min == 1:     # Lowest BIC is 3-parameter fit
+        t_extr = crit['3_parameter'][1][0]
+        if t_extr >= threshold_t_extr:     # Constant distance
+            closing_rate = np.nan
+        if t_extr < threshold_t_extr:     # Linear decrease
             closing_rate = crit['3_parameter'][2]
-            fit_used = 3
-    else:
+    else:               # Not sufficient data to do the fitting
         closing_rate = np.nan
-        fit_used = np.nan
-    return closing_rate, fit_used
+    return closing_rate
 
 
 
@@ -97,7 +94,7 @@ Cell_line = 'L2'
 
 if Cell_line == 'L1':
     tracks_WT = pd.read_csv('/Path_To_Filtered_Dataset/L1_NoAuxin_QC.csv', sep=';')
-    tracks_deplete = pd.read_csv('/Path_To_Filtered_DatasetL1_Auxin2h_QC.csv', sep=';')
+    tracks_deplete = pd.read_csv('/Path_To_Filtered_Dataset/L1_Auxin2h_QC.csv', sep=';')
     size_loop = 345  # in kb
     
 if Cell_line == 'L2':
@@ -110,7 +107,7 @@ if Cell_line == 'T1':
     tracks_deplete = pd.read_csv('/Path_To_Filtered_Dataset/T1_Auxin2h_QC.csv', sep=';')
     size_loop = 918  # in kb
 
-if Cell_line == 'No_Loop':
+if Cell_line == 'HalfTAD':
     tracks_WT = pd.read_csv('/Path_To_Filtered_Dataset/NoTAD_NoAuxin_QC.csv', sep=';')
     tracks_deplete = pd.read_csv('/Path_To_Filtered_Dataset/NoTAD_Auxin2h_QC.csv', sep=';')
     size_loop = 576  # in kb
@@ -125,13 +122,13 @@ tracks_na = Add_NA_in_missing_frames_And_interpolate(tracks_WT.copy(), True)
 tracks_deplete_na = Add_NA_in_missing_frames_And_interpolate(tracks_deplete.copy(), True)
 tracks_adjacent_na = Add_NA_in_missing_frames_And_interpolate(tracks_adjacent.copy(), True)
 
+if Cell_line == 'L1':
+    thresh_space = 0.19945400124787457
 if Cell_line == 'L2':
     thresh_space = 0.218277245599599
 if Cell_line == 'T1':
     thresh_space = 0.2363151398746736
-if Cell_line == 'L1':
-    thresh_space = 0.19945400124787457
-if Cell_line == 'No_Loop':
+if Cell_line == 'HalfTAD':
     thresh_space = 0.2204404763636802
 thresh_space_adjacent = 0.24938339452179015   # In um
 time_threshold = 6     # In frames
@@ -152,7 +149,7 @@ filtered_adjacent, start_closed_state_adjacent, end_closed_state_adjacent, censo
 
 # %% Fraction
 
-print('Proximal fraction - Auxin = ', list(filtered_WT['Proximal_filt']).count(1) / len(filtered_WT))
+print('Proximal fraction No Auxin = ', list(filtered_WT['Proximal_filt']).count(1) / len(filtered_WT))
 print('Proximal fraction + Auxin = ', list(filtered_deplete['Proximal_filt']).count(1) / len(filtered_deplete))
 print('Proximal fraction adjacent = ', list(filtered_adjacent['Proximal_filt']).count(1) / len(filtered_adjacent))
 
@@ -163,7 +160,7 @@ mean_frequency = get_closed_state_frequency(filtered_WT.copy(), s_frame)
 mean_frequency_deplete = get_closed_state_frequency(filtered_deplete.copy(), s_frame)
 mean_frequency_adjacent = get_closed_state_frequency(filtered_adjacent.copy(), s_frame)
 
-print('Proximal fraction - Auxin = %.2f h⁻¹'% (mean_frequency * 3600))
+print('Proximal fraction No Auxin = %.2f h⁻¹'% (mean_frequency * 3600))
 print('Proximal fraction + Auxin = %.2f h⁻¹'% (mean_frequency_deplete * 3600))
 print('Proximal fraction adjacent = %.2f h⁻¹'% (mean_frequency_adjacent * 3600))
 
@@ -181,7 +178,7 @@ closed_lifetime_list_in_min_adjacent = [i / conversion_to_min for i in closed_li
 # %%% MLE fitting of lifetimes
 
 mean, low, high = MLE_censored_exponential(closed_lifetime_list_in_min, Censored_list, 0.95)
-print('- Auxin mean lifetime = ' + str(round(mean, 2)) + ' min')
+print('No Auxin mean lifetime = ' + str(round(mean, 2)) + ' min')
 
 mean_deplete, low_deplete, high_deplete = MLE_censored_exponential(closed_lifetime_list_in_min_deplete, Censored_list_deplete, 0.95)
 print('+ Auxin mean lifetime = ' + str(round(mean_deplete, 2)) + ' min')
@@ -216,15 +213,30 @@ plt.xlim((0, 80))
 plt.legend(fontsize=22, frameon=False)
 
 # %% Fit closing rate
+# Use a more conservation segmentation of proximal state for closing rate fitting
+if Cell_line == 'L1':
+    thresh_space_CR = 0.13631379864169063
+if Cell_line == 'L2':
+    thresh_space_CR = 0.14625971061135684
+if Cell_line == 'T1':
+    thresh_space_CR = 0.1589465752706419
+if Cell_line == 'HalfTAD':
+    thresh_space_CR = 0.14335860065048628
+
+# Conservative segmentation of proximal states
+data = tracks_na.copy()
+masked_WT_tracks, start_closed_state_notfiltered, end_closed_state_notfiltered = get_closed_state_in_tracks(data.copy(), thresh_space_CR, time_threshold)
+filtered_WT_closingrate, start_closed_state_closingrate, end_closed_state_closingrate, censored_closingrate = mean_filter_masked_tracks(masked_WT_tracks.copy(), time_threshold)
+
 # Retrieve proximal states in untreated time series and align distances on proximal states
 window = 50  # size of fitting window (in frames)
-closed_tracks, Scores = retrieve_closed_states_without_closed_states_before_wdw_timepoints_fulltracksOnly_WithScores(filtered_WT, start_closed_state, window)
+closed_tracks, Scores = retrieve_closed_states_without_closed_states_before_wdw_timepoints_fulltracksOnly_WithScores(filtered_WT_closingrate, start_closed_state_closingrate, window)
 Closed_arr, Score_arr = make_array_of_distances_scores_from_dict(closed_tracks, Scores, window)
 
 # Randomly shuffle data
-tracks_rdm = randomize_each_timepoint_in_df(filtered_WT.copy())
+tracks_rdm = randomize_each_timepoint_in_df(filtered_WT_closingrate.copy())
 # Detect proximal states in randomly shuffled data
-masked_rdm_tracks, start_closed_state_notfiltered_rdm, end_closed_state_notfiltered_rdm = get_closed_state_in_tracks(tracks_rdm.copy(), thresh_space, time_threshold)
+masked_rdm_tracks, start_closed_state_notfiltered_rdm, end_closed_state_notfiltered_rdm = get_closed_state_in_tracks(tracks_rdm.copy(), thresh_space_CR, time_threshold)
 filtered_rdm, start_closed_state_rdm, end_closed_state_rdm, censored_rdm = mean_filter_masked_tracks(masked_rdm_tracks.copy(), time_threshold)
 # Retrieve proximal states in randomly shuffled data and align distances on proximal states
 closed_tracks_rdm, Scores_rdm = retrieve_closed_states_without_closed_states_before_wdw_timepoints_fulltracksOnly_WithScores(filtered_rdm, start_closed_state_rdm, window)
@@ -233,38 +245,34 @@ Closed_arr_rdm, Score_arr_rdm = make_array_of_distances_scores_from_dict(closed_
 # Fit closing rate
 DEB = 0
 window_fit = window
+Threshold_t_extr = -121    # is seconds, threshold on t_extr
 frame_s = 1 / s_frame    # frames / second
 list_dist = list(filtered_deplete['Distance'])
 list_precision = list(filtered_deplete['precision_Distance'])
 R02 = np.nanmean([list_dist[i]**2 - list_precision[i]**2 for i in range(len(list_dist))])
 Mean_std_prec = np.loadtxt('/Path_To_MeanAndStd_All_Cell_Lines/240626_Mean_Std_prec_All_Cell_Lines.txt')
 
-closing_rate_3param, R2_estimate, slope_avg, x, t_extr, R2int_fit, criterion = fit_ClosingRate_TakingIntoAccount_LocalizationPrecision(Closed_arr[:window_fit, :], Score_arr[:window_fit, :], frame_s, size_loop, R02, Mean_std_prec)
-closing_rate, nbr_param = get_closing_rates_based_on_criterion(criterion)
-print('- Auxin Closing rate = %.3f' % (closing_rate) + ' kb/s')
-print('- Auxin is better described by a model with %d parameter(s)' % (nbr_param))
+closing_rate_3param, R2_estimate, slope_avg, x, t_extr, R2int_fit, criterion = fit_ClosingRate_TakingIntoAccount_LocalizationPrecision(Closed_arr, Score_arr, frame_s, size_loop, R02, Mean_std_prec)
+closing_rate = get_closing_rates_based_on_criterion(criterion, Threshold_t_extr)
+if math.isnan(closing_rate) is False:
+    print('No auxin Closing rate = %.3f' % (closing_rate) + ' kb/s')
+if math.isnan(closing_rate) is True:
+    print('No auxin time series exhibit constant distances')
 
-closing_rate_rdm_3param, R2_estimate_rdm, slope_avg_rdm, x_rdm, t_extr_rdm, R2int_fit_rdm, criterion_rdm = fit_ClosingRate_TakingIntoAccount_LocalizationPrecision(Closed_arr_rdm[:window_fit, :], Score_arr_rdm[:window_fit, :], frame_s, size_loop, R02, Mean_std_prec)
-closing_rate_rdm, nbr_param_rdm = get_closing_rates_based_on_criterion(criterion_rdm)
-print('Randomly shuffled closing rate = %.3f' % (closing_rate_rdm) + ' kb/s')
-print('Randomly shuffled is better described by a model with %d parameter(s)' % (nbr_param_rdm))
-
+closing_rate_rdm_3param, R2_estimate_rdm, slope_avg_rdm, x_rdm, t_extr_rdm, R2int_fit_rdm, criterion_rdm = fit_ClosingRate_TakingIntoAccount_LocalizationPrecision(Closed_arr_rdm, Score_arr_rdm, frame_s, size_loop, R02, Mean_std_prec)
+closing_rate_rdm = get_closing_rates_based_on_criterion(criterion_rdm, Threshold_t_extr)
+if math.isnan(closing_rate_rdm) is False:
+    print('Randomly shuffled closing rate = %.3f' % (closing_rate_rdm) + ' kb/s')
+if math.isnan(closing_rate_rdm) is True:
+    print('Randomly shuffled time series exhibit constant distances')
 
 # %%% Plot closing rate fit in untreated and randomly shuffled time series
 
-if nbr_param == 3:
-    s_f = SpeedFitting(t_extr, R2int_fit, R2_estimate)
-    fitted_extr = s_f.func2slopes(x, [t_extr, R2int_fit, R2_estimate])
-if nbr_param == 1:
-    s_f = SpeedFittingPolynomial(nbr_param - 1)
-    fitted_extr = s_f.funcPoly(x, criterion['1_parameter'][1])
+s_f = SpeedFitting(t_extr, R2int_fit, R2_estimate)
+fitted_extr = s_f.func2slopes(x, [t_extr, R2int_fit, R2_estimate])
 
-if nbr_param_rdm == 3:
-    s_f_rdm = SpeedFitting(t_extr_rdm, R2int_fit_rdm, R2_estimate_rdm)
-    fitted_extr_rdm = s_f_rdm.func2slopes(x_rdm, [t_extr_rdm, R2int_fit_rdm, R2_estimate_rdm])
-if nbr_param_rdm == 1:
-    s_f_rdm = SpeedFittingPolynomial(nbr_param_rdm - 1)
-    fitted_extr_rdm = s_f_rdm.funcPoly(x_rdm, criterion_rdm['1_parameter'][1])
+s_f_rdm = SpeedFitting(t_extr_rdm, R2int_fit_rdm, R2_estimate_rdm)
+fitted_extr_rdm = s_f_rdm.func2slopes(x_rdm, [t_extr_rdm, R2int_fit_rdm, R2_estimate_rdm])
 
 
 # Plots
@@ -279,11 +287,14 @@ x_plot = np.arange(- (window_fit + 1) * (1 / frame_s), 0 + 1/frame_s, 1/frame_s)
 plt.figure()
 plt.plot(x_plot, normalized_close_square_mean_rdm, color='olive', lw=4)
 plt.fill_between(x_plot, normalized_close_square_mean_rdm - sem_rdm, normalized_close_square_mean_rdm + sem_rdm, facecolor='olive', alpha=0.4, lw=0)
-plt.plot(x_plot[DEB:window_fit], fitted_extr_rdm[DEB:window_fit], color='olive', ls='--', label='Shuffled: %.2f' % (closing_rate_rdm) + ' kb/s', lw=4)
+if math.isnan(closing_rate_rdm) is False:
+    plt.plot(x_plot[DEB:window_fit], fitted_extr_rdm[DEB:window_fit], color='olive', ls='--', label='Shuffled: %.2f' % (closing_rate_rdm) + ' kb/s', lw=4)
+if math.isnan(closing_rate_rdm) is True:
+    plt.plot(x_plot[DEB:window_fit], fitted_extr_rdm[DEB:window_fit], color='olive', ls='--', label='Shuffled: Constant', lw=4)
 
 plt.plot(x_plot, normalized_close_square_mean, color='r', lw=4)
 plt.fill_between(x_plot, normalized_close_square_mean - sem, normalized_close_square_mean + sem, facecolor='r', alpha=0.4, lw=0)
-plt.plot(x_plot[DEB:window_fit], fitted_extr[DEB:window_fit], color='darkred', ls='--', label='- Auxin: %.2f' % (closing_rate) + ' kb/s', lw=4)
+plt.plot(x_plot[DEB:window_fit], fitted_extr[DEB:window_fit], color='darkred', ls='--', label='No auxin: %.2f' % (closing_rate) + ' kb/s', lw=4)
 
 plt.xticks(fontsize=20)
 plt.yticks(fontsize=20)

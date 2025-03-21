@@ -475,8 +475,8 @@ def make_array_of_distances_scores_from_dict(dict_dist, dict_score, wdw):
     Score_arr[:] = np.nan
     for track in dict_dist.keys():
         for closed in dict_dist[track].keys():
-            Closed_arr[wdw + 2 - len(dict_dist[track][closed]):, p] = dict_dist[track][closed]
-            Score_arr[wdw + 2 - len(dict_score[track][closed]):, p] = dict_score[track][closed]
+            Closed_arr[:len(dict_dist[track][closed]), p] = dict_dist[track][closed]
+            Score_arr[:len(dict_score[track][closed]), p] = dict_score[track][closed]
             p += 1
     return Closed_arr, Score_arr
 
@@ -509,6 +509,7 @@ class Score2prec:
     def GaussianRepartionFunctionShifted2Gaussian(self,score):
         d=scipy.special.erfinv((-(score-1)*2)-1)*(np.sqrt(2)*self.std)+(self.mean+self.std)
         return d
+
 
 
 
@@ -566,7 +567,8 @@ class SpeedFitting:
         y[x>=p0]=slope*x[x>=p0]+p1
         return y
 
-    def fit(self,x_time2D,data,datastd,parametersFitted=[True,True,True], with_multi_init_of_textr_and_R2plateau=True):
+
+    def fit(self,x_time2D,data,datastd,parametersFitted=[False, False, True], with_multi_init_of_A_and_R2=True):
         """
         Parameters
         ----------
@@ -579,7 +581,7 @@ class SpeedFitting:
         parametersFitted : Array of booleans, optional
             Whether [t_extr, R2int, R2plateau] should be fitted (True) or fixed (False). The default is [True,True,True].
         with_multi_init_of_textr_and_R2plateau : boolean, optional
-            True if perform mult initialization of t_extr and R2int, which minimizes the risk of local minima during fitting. The default is True.
+            True if perform multi initialization of t_extr and R2int, which minimizes the risk of local minima during fitting. The default is True.
 
         Returns
         -------
@@ -588,6 +590,8 @@ class SpeedFitting:
         loglik : array
             Log-likelihood.
         """
+        if parametersFitted[0] is True:
+            print('ERROR: t_extr parameter should not be fitted')
         self.parametersFitted=parametersFitted
         #function to minimize
         def fun_loss(p, x, y):
@@ -598,23 +602,18 @@ class SpeedFitting:
         x_time_list=x_time2D.ravel()
         y_data_list=data.ravel()
         datastd_list=datastd.ravel()
-        
-        # If multiple initialization
-        if with_multi_init_of_textr_and_R2plateau:
-            if parametersFitted[0] is False:
-                print('ERROR : A_shift parameter should be fitted if with_multi_init_of_textr_and_R2plateau is True')
-                parametersFitted[0]=True
+
+        if with_multi_init_of_A_and_R2:
             if parametersFitted[2] is False:
-                print('ERROR : R2 parameter should be fitted if with_multi_init_of_textr_and_R2plateau is True')
-                parametersFitted[2]=True
-            step_shift_a=3    # The number of timepoints between different initializations of t_extr
+                print('ERROR : R2 parameter should be fitted if with_multi_init_of_A_and_R2 is True')
+            step_shift_t_extr=1     # The number of timepoints between different initializations of t_extr
             mini_loss=np.Inf
             mini_lik=np.Inf
             finalP=None
-            init_t_extr = np.arange(4, len(x_time2D), step_shift_a)   # fit a minimum of 4 timepoints from the proximal state
-            init_t_extr_reversed = [len(x_time2D) - i for i in init_t_extr]
-            # iterates over the initialization timepoints
-            for various in init_t_extr_reversed:
+            init_t_extr = np.arange(1, len(x_time2D) - 1, step_shift_t_extr)   # fit a minimum of X timepoints
+            best_t_extr = init_t_extr[0]
+            for various in init_t_extr:
+                self.a=x_time2D[various][0]
                 pToFit=[]
                 if parametersFitted[0]:
                     pToFit.append(x_time2D[various][0])
@@ -626,79 +625,27 @@ class SpeedFitting:
                 p_2slopes=least_squares(fun_loss, pToFit, args=(x_time_list, y_data_list)).x
                 lossinit=np.power(fun_loss(pToFit,x_time_list, y_data_list),2)
                 loss=np.power(fun_loss(p_2slopes,x_time_list, y_data_list),2)
-                lik=np.divide(loss,np.power(datastd_list,2))
+                lik=loss
                 if np.sum(lik)<mini_loss:
                     mini_loss=np.sum(lik)
                     mini_lik=np.sum(lik)
-                    finalP=p_2slopes
+                    finalP=p_2slopes   
+                    best_t_extr = self.a
             # Save the minimal loss over all initialization steps
             loss_mse=mini_loss
             p_2slopes=finalP
-        
-        # If single initialization. Beware, the fit could be sub-optimal due to local minima.
-        else:
-            pToFit=[]
-            if parametersFitted[0]:
-                pToFit.append(self.a)
-            if parametersFitted[1]:
-                pToFit.append(self.b)
-            if parametersFitted[2]:
-                pToFit.append(self.R2)
-            p_2slopes=least_squares(fun_loss, pToFit, args=(x_time_list, y_data_list,datastd_list)).x
-            lossinit=np.power(fun_loss(pToFit,x_time_list, y_data_list,datastd_list),2)
-            loss=np.power(fun_loss(p_2slopes,x_time_list, y_data_list),2)
-            lik=np.divide(loss,np.power(datastd_list,2))
-            mini_lik=np.sum(lik)
-            loss_mse=np.sum(lik)
+            self.a = best_t_extr
 
         p0,p1,p2=self.getp012(p_2slopes)
         finalP=[p0,p1,p2]
 
         #update class values
         self.a=p0
-        self.b=p1
-        self.R2=p2
+        self.b=p1 #b initialized to the last point
+        self.R2=p2 #R2 initialized to the mean
         
         log_lik=-0.5*mini_lik
         return finalP,log_lik
-
-
-class SpeedFittingPolynomial:
-    def __init__(self,order):
-        self.order=order
-
-    def funcPoly(self,x, p):
-        f=np.zeros(len(x))
-        for i_p,p_v in enumerate(p):
-            f=np.add(f,np.multiply(np.power(x,i_p),p_v))
-        return f
-
-
-    # Fitting of a polynome of degree 'order'
-    def fit_poly(self,x_time2D,data,datastd):
-        #function to minimize
-        def fun_loss_poly(p, x, y):
-            func=self.funcPoly(x, p)
-            loss= y-func            
-            return loss
-
-
-        x_time_list=x_time2D.ravel()
-        y_data_list=data.ravel()
-        datastd_list=datastd.ravel()
-
-        #fitting:
-        p_init=np.zeros(self.order+1)
-        p_init[0]=np.mean(y_data_list)
-        p_fitted=least_squares(fun_loss_poly, p_init, args=(x_time_list, y_data_list)).x
-        lossinit=np.power(fun_loss_poly(p_init,x_time_list, y_data_list),2)
-        loss=np.power(fun_loss_poly(p_fitted,x_time_list, y_data_list),2)
-        lik=np.divide(loss,np.power(datastd_list,2))
-
-        # loss_mse=np.sum(lik)
-        log_lik=-0.5*np.sum(lik)
-        return p_fitted, log_lik
-
 
 
 def computeBIC(log_lik,k,n):
@@ -706,49 +653,8 @@ def computeBIC(log_lik,k,n):
     return(bic)
 
 
-def fit_ClosingRate_TakingIntoAccount_LocalizationPrecision(close_states, scores, frame_s, len_loop, mean_R02, mean_Std_prec, textr_is_fitted=True, R2int_is_fitted=True, R2plateau_is_fitted=True, with_multi_init_of_textr_and_R2plateau=True):
-    """
-    Parameters
-    ----------
-    close_states : Array
-        Distances aligned on proximal states, last row corresponds to the timepoint closest to the proximal state, the columns correspond to different proximal states.
-    scores : Array
-        Scores (based on localization precision) corresponding to distances in 'close_states'.
-    frame_s : float
-        Image per second .
-    len_loop : int
-        Genomic size of the TAD (in kb).
-    mean_R02 : float
-        Mean squared distance in RAD21-depleted cells minus the contribution of localization errors, used to convert genomic distances into um².
-    mean_Std_prec : Array of float
-        Mean and standard deviation of the Gaussian used to convert localization precision to scores.
-    textr_is_fitted : boolean, optional
-        True if want to fit t_extr, False if fixing t_extr. The default is True.
-    R2int_is_fitted : boolean, optional
-        True if want to fit R2int, False if fixing R2int. The default is True.
-    R2plateau_is_fitted : boolean, optional
-        True if want to fit R2plateau, False if fixing R2plateau. The default is True.
-    with_multi_init_of_textr_and_R2plateau : boolean, optional
-        True if perform mult initialization of t_extr and R2int, which minimizes the risk of local minima during fitting. The default is True.
+def fit_ClosingRate_TakingIntoAccount_LocalizationPrecision(close_states, scores, frame_s, len_loop, mean_R02, mean_Std_prec, textr_is_fitted=False, R2int_is_fitted=False, R2plateau_is_fitted=True, with_multi_init_of_textr_and_R2plateau=True):
 
-    Returns
-    -------
-    closing_rate_2slopes : float
-        Estimated closing rate.
-    R2_estimated : float
-        Estimated R2plateau.
-    slope_2slopes : float
-        Estimated slope in um²/s.
-    x_time : array
-        time (in s).
-    t_extr : float
-        Estimated t_extr.
-    R2int : float
-        Estimated R2int.
-    information_criterion : dict
-        Contains the BIC value of the constant and 3-parameter models, their respective parameters and estimated closing rates.
-    """
-    
     # convert score back to localization precision
     sc_p = Score2prec(mean_Std_prec[0], mean_Std_prec[1])
     loc_prec = sc_p.GaussianRepartionFunctionShifted2Gaussian(scores)
@@ -768,7 +674,7 @@ def fit_ClosingRate_TakingIntoAccount_LocalizationPrecision(close_states, scores
     lentrack = sh[0]
     nbtrack = sh[1]
     std_weighted = np.divide(np.sqrt(np.divide(np.sum(np.multiply(np.power(np.transpose(np.subtract(np.transpose(closed_states_squared), norm_mean_weighted_dist)), 2), scores),axis=1), np.sum(scores,axis=1))), np.sqrt(nbtrack))
-    x_time = 1 / frame_s *(np.arange(lentrack) - lentrack - 1)
+    x_time = 1 / frame_s * (np.arange(lentrack) - lentrack - 1)
 
     # get nan values in data and in score
     scoreisnan = np.isnan(scores)  # nan score
@@ -780,25 +686,14 @@ def fit_ClosingRate_TakingIntoAccount_LocalizationPrecision(close_states, scores
     x_time2DMean = np.transpose([np.mean(x_time2D, axis=1)])
 
     # parameter initialization
-    if textr_is_fitted is True:
-        t_extr_init = np.min(x_time) / 2    # Not taken into account if using multiple initialization ( with_multi_init_of_A_and_R2=True)
-    if R2int_is_fitted is True:
-        R2int_init = norm_mean_weighted_dist[-1]
-    else:
-        R2int_init = norm_mean_weighted_dist[-1]
+    t_extr_init = np.min(x_time) / 2    # Not taken into account if using multiple initialization ( with_multi_init_of_A_and_R2=True)
+    R2int_init = norm_mean_weighted_dist[-1]
     if R2plateau_is_fitted is True:
         R2plateau_init = np.nanmean(norm_mean_weighted_dist[:int(lentrack / 2)])    # Not taken into account if using multiple initialization ( with_multi_init_of_A_and_R2=True)
     else:
-        R2plateau_init = np.nanmean(norm_mean_weighted_dist[:int(lentrack / 2)])
+        R2plateau_init = R2plateau_init
     
-    # Fit different models
-    # Constant model with 1 parameter
-    order=0
-    s_f = SpeedFittingPolynomial(order)
-    parameters_poly0, loglik_poly0=s_f.fit_poly(x_time2DMean, norm_mean_weighted_dist, std_weighted) 
-    slope_poly0=0
-    bic_poly0=computeBIC(loglik_poly0, 1, lentrack)
-
+    # Fit
     # 3-parameter model with a plateau and a linear slope
     s_f = SpeedFitting(t_extr_init, R2int_init, R2plateau_init)
     parameters_2slopes, loglik_2slopes = s_f.fit(x_time2DMean, norm_mean_weighted_dist, std_weighted, [textr_is_fitted, R2int_is_fitted, R2plateau_is_fitted], with_multi_init_of_textr_and_R2plateau)
@@ -813,10 +708,8 @@ def fit_ClosingRate_TakingIntoAccount_LocalizationPrecision(close_states, scores
     closing_rate_2slopes = - slope_2slopes * S0overR02
 
     information_criterion = {}
-    information_criterion['1_parameter'] = (bic_poly0, parameters_poly0, slope_poly0)
     information_criterion['3_parameter'] = (bic_2slopes, parameters_2slopes, closing_rate_2slopes)
     return closing_rate_2slopes, R2_estimated, slope_2slopes, x_time, t_extr, R2int, information_criterion
-
 
 
 def Keep_Only_Desired_Columns(data, columns_to_keep):
