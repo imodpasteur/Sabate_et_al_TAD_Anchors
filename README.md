@@ -6,4 +6,4 @@ Python scripts to quantitatively characterize cohesin-mediated loop extrusion fr
 
 MIT
 
-These scripts are distributed under the license MIT on an "as is" basis, without warranties or conditions of any kind.
+These scripts are distributed under the MIT license on an "as is" basis, without warranties or conditions of any kind.
