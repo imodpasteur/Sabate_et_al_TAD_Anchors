@@ -5,18 +5,11 @@ This repository contains files for chromatic aberration correction and spot loca
 
 ## Requirements
 
-This package is developed in python and requires the following libraries:
+This package is developed in python and requires the following conda environment:
 
-numpy
-pandas
-scipy
-scikit-learn
-scikit-image
-tifffile
-statsmodels
-pathlib
-imageio
-pillow
+* conda create -n sabate_repo python=3.10
+* conda activate sabate_repo
+* pip install imageio numpy scipy scikit-learn tifffile elementpath scikit-image pandas matplotlib seaborn pycairo python-igraph statsmodels
 
 
 ## Usage
