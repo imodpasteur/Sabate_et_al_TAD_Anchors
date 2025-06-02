@@ -11,7 +11,7 @@ number_simul=2
 
 
 #current folder:
-pathdata="./example"
+pathdata="./simulations"
 
 sizeKb_list="345 566 918 576 "
 processivityKb_list="330"
