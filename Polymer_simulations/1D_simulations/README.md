@@ -24,7 +24,7 @@ The script runSimulationBeforeLammps.py allows to reproduce 1D simulations as it
 * The propability of CTCF occupancy (we used 0.5 in our paper)
 * The output simulation path where the simulations are stored
 These 1D simulations were then used as inputs for LAMMPS to simulate 3D polymer dynamics, together with loop extrusion.
-As an example, we provide "runSimulationAsInPaper.sh" file that show how to run simulations. It creates a set of folders (one folder for each condition) including "run_Multiple_loop.sh" that can then be run for polymer simulation with LAMMPS.
+As an example, we provide "runSimulationAsInPaper.sh" file that show how to run simulations. It creates a set of folders (one folder for each condition) including "run_Multiple_loop.sh" that can then be run on a cluster for polymer simulation with LAMMPS.
 
 
 
