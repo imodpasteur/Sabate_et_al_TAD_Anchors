@@ -34,6 +34,18 @@ extrusionSpeedKb=float(sys.argv[5])
 proba_CTCF_occupancy=float(sys.argv[6])
 output_simulation_path=sys.argv[8]
 
+def strtobool (val):
+    val = val.lower()
+    if val in ('y', 'yes', 't', 'true', 'on', '1'):
+        return 1
+    elif val in ('n', 'no', 'f', 'false', 'off', '0'):
+        return 0
+    else:
+        raise ValueError("invalid truth value %r" % (val,))
+showPlot=bool(strtobool(sys.argv[9]))
+
+print("show:",showPlot)
+
 print('path:',output_simulation_path)
 #output_simulation_path='./A2Asimulations/240129_A2Asimulations_condition_test'
 
@@ -133,7 +145,6 @@ b=1
 
 totalAreaMb=2.6#Mb
 
-showPlot=False
 
 
 
@@ -489,7 +500,7 @@ if s==0:
     copyFolderFiles(folderLammpsFiles2,folderpath)
 else:
     timelib.sleep(.1)#to be sure the s==0 is already done
-if s<5:
+if s<2:
     show=showPlot
 else:
     show=False
