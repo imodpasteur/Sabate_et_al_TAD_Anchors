@@ -5,9 +5,11 @@ This repository allows to simulate loop extrusion on a genomic region of a given
 
 ## Requirements
 
-This package is developed in python and requires the following libraries:
+This package is developed in python and requires the following libraries. You can create a conda environment as follow to run the program:
 
-numpy Pillow scipy pandas ipython scikit-image scikit-learn imageio tifffile pycairo seaborn igraph
+* conda create -n sabate_repo python=3.10
+* conda activate sabate_repo
+* pip install imageio numpy scipy scikit-learn tifffile elementpath scikit-image pandas matplotlib seaborn pycairo python-igraph statsmodels
 
 
 ## Usage
