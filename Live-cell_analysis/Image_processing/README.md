@@ -21,7 +21,7 @@ pillow
 
 ## Usage
 
-The files are executed in the following order to track spots in 2-channel images. The images have to be in tif format in the following order: TZCYX.
+The files are executed in the following order to track spots in 2-channel images. The images have to be in tif format in the following order: TZCYX. We profide "runExample.sh" file that runs the tracking on an example.
 
 
 1. replicatedSpotDetection.py takes a 5D .tif image as input and outputs a 2D histogram of localizations saved in .tif. The intensities of the pixels in the output image indicate whether the localized spots are elongated or not. This script was used to guide the filtering of replicated spots.
@@ -39,4 +39,3 @@ The files are executed in the following order to track spots in 2-channel images
 ## License
 MIT
 The code is distributed under the license MIT on an "as is" basis, without warranties or conditions of any kind.
-

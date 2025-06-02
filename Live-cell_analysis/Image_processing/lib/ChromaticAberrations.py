@@ -80,7 +80,7 @@ class ChromaticAberrations:
 
     def removeDriftCorrection(self):
         #input 2D table: [time, color, Z, Y, X]
-        print('toto')
+        print('todo')
 
     def show(self):
         print('reference index:',self.refwave)
@@ -109,7 +109,7 @@ class ChromaticAberrations:
 
 
 
-        print('cx cy',cx,cy)
+        #print('cx cy',cx,cy)
         xx=np.subtract(matrix[0],cx)
         yy=np.subtract(matrix[1],cy)
 
@@ -231,7 +231,7 @@ class ChromaticAberrations:
         for i in range(aa[0]):
             for ii in range(aa[1]):
                 AA[i][ii]=int(AA[i][ii])
-        print(AA)
+        #print(AA)
         #for safety, we pad twice more than needed
         imagepad=np.pad(image,AA, 'constant', constant_values=(0))
         result = scnd.zoom(imagepad, s,order=1)

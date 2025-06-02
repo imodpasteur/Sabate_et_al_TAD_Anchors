@@ -71,7 +71,7 @@ class DriftCorrection:
             #viewer.add_image(spatial,name='spatial',gamma=0,contrast_limits=[np.min(spatial),np.max(spatial)])
             ind=np.subtract(np.unravel_index(np.argmax(spatial, axis=None), spatial.shape),[padding*sizeY/2,padding*sizeX/2])
             drift[i]=[i,ind[0],ind[1]]
-            print((frameNumber-i),ind)
+            #print((frameNumber-i),ind)
         return drift
 
     @staticmethod
