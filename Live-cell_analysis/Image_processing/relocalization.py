@@ -32,36 +32,13 @@ from lib.DriftCorrection import *
 imagepath=sys.argv[1]
 
 
-print('image path: ',imagepath)
+chromagnonpath=sys.argv[2]
 
-
-#automatic search of chromagnon file in parent folder
-parent=Path(imagepath).parent.parent
-
-liste=[os.path.join(dirpath,f) for (dirpath, dirnames, filenames) in os.walk(parent) for f in filenames if "chromagnon.csv" in f]
-if len(liste) !=1:
-    try:
-        raise OSError('ErrFileNumber')
-    except OSError:
-        raise RuntimeError("ERROR: chromagnon file numbert found is not 1. It is: "+str(len(liste)))
-
-chromagnonpath=liste[0]
-
-
-print('chromagnon path: ',chromagnonpath)
-
-
-
-#path of paired file (same folder as DC image)
-locpath=os.path.join(parent,'Analysis_DC','Pairing','WithNAN',os.path.basename(imagepath)[:-4]+'_CHAB_Paired_WithNAN.csv')
-#locpath=imagepath[:-4]+'_CHAB_Paired_WithNAN.csv'
+locpath=sys.argv[3]
 
 print('loc path: ',locpath)
 
-
-
-#path of drift file (same folder as DC image)
-driftpath=imagepath[:-7]+'_drift.csv'
+driftpath=sys.argv[4]
 
 print('drift path: ',driftpath)
 
@@ -78,7 +55,7 @@ print('drift path: ',driftpath)
 #size of pixel [X,Y,Z] (in µm)
 voxelsize=[0.1205,0.1205,0.2897]#um
 
-delimiter=";" # even ',' or ';'
+delimiter="," # even ',' or ';'
 
 
 #image_photons_count=(image+intercept)*rescale
@@ -912,11 +889,13 @@ def mat2vect(table,frame,track):
     z=[]
     f=[]
     for i in np.unique(track):
-        index=(track==i)
+        frame=np.array(frame)
+        index=np.array(track==i)
         xyz=table[index]
         x.append(xyz[:,0])
         y.append(xyz[:,1])
         z.append(xyz[:,2])
+        print(len(frame),len(index))
         f.append(frame[index])
     return x,y,z,f
 
@@ -1555,7 +1534,7 @@ if refit_with_averaged_intensity:
     elif fixedStdGreen is None:
         locpathnew=locpath[:-4]+'_GaussianFit_StdGreenFitted_refit.csv'
 else:
-    locpathnew=locpath[:-4]+'_GaussianFitBenoit.csv'
+    locpathnew=locpath[:-4]+'_GaussianFit.csv'
 
     if fixedStdRed is None and fixedStdGreen is None :
         locpathnew=locpath[:-4]+'_GaussianFit_StdFitted.csv'

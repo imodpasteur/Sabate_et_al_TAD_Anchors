@@ -33,8 +33,8 @@ folder, imagename = os.path.split(f)
 
 
 driftfilename=imagename[:-4]+'_drift.csv'
-outputimagename=imagename[:-4]+'_DC.tif'
-outputimagename2=imagename[:-4]+'_DC_CHAB.tif'
+outputimagename=imagename[:-4]+'_DC.tif' #drift corrected image
+outputimagename2=imagename[:-4]+'_DC_CHAB.tif' #CHromatic ABerration corrected image
 
 
 
@@ -109,7 +109,7 @@ image5Dres=np.moveaxis(image5Dres,0,2)
 
 image5D=None
 
-print("drift",drift)
+print("shift",drift)
 
 imshiftednew=DriftCorrection.shiftImage(image5Dres,drift)
 

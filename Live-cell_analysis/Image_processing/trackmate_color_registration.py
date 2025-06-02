@@ -22,25 +22,26 @@ from lib.DriftCorrection import *
 
 trackRedCh0path=sys.argv[1]
 
-chromagnonfile=sys.argv[2]
+trackGreenCh1path=sys.argv[2]
 
-folderDrift=sys.argv[3]
 
-folderImage=sys.argv[4]
+
+
+chromagnonfile=sys.argv[3]
+
+driftFilePath=sys.argv[4]
+
+imagepath=sys.argv[5]
 
 
 
 folder,name=os.path.split(trackRedCh0path)
 
 
-trackGreenCh1path=trackRedCh0path[:-8]+'GFP.xml'
+folderImage,nameCHAB=os.path.split(imagepath)
 
 
 
-driftFilePath=os.path.join(folderDrift,name[:-11])+'drift.csv'
-
-
-imagepath=os.path.join(folderImage,name[:-8]+"CHAB.tif")
 
 
 
