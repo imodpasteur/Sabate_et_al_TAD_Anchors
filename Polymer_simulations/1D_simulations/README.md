@@ -21,7 +21,7 @@ The script runSimulationBeforeLammps.py allows to reproduce 1D simulations as it
 * An extrusion motor speed (we varied it from 0.0625 to 0.5 kb/s in our paper). This is the speed of one-directional extrusion. The effective speed is therefore twice the value indicated due to bidirectional extrusion.
 * The propability of CTCF occupancy (we used 0.5 in our paper)
 * The output simulation path where the simulations are stored
-
+As an example, we provide "runSimulationAsInPaper.sh" file that show how to run simulations.
 These 1D simulations were then used as inputs for LAMMPS to simulate 3D polymer dynamics, together with loop extrusion.
 
 
