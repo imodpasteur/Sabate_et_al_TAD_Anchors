@@ -5,7 +5,7 @@ This repository contains files for chromatic aberration correction and spot loca
 
 ## Requirements
 
-This package is developed in python and requires the following libraries. You can create a conda environment as follow to run the program:
+This package is developed in python and requires the following libraries. You can create a conda environment (less than 1 min) as follow that will allow you to run the program:
 
 * conda create -n sabate_env python=3.10
 * conda activate sabate_env
