@@ -5,7 +5,7 @@ This repository allows to simulate loop extrusion on a genomic region of a given
 
 ## Requirements
 
-This package is developed in python and requires the following libraries. You can create a conda environment (less than 1 min) as follow to run the program:
+This package is developed in python and requires the following libraries. You can create a conda environment (less than 1 min) as follow that will allow you to run the program:
 
 * conda create -n sabate_env python=3.10
 * conda activate sabate_env
@@ -25,7 +25,7 @@ The script runSimulationBeforeLammps.py allows to reproduce 1D simulations as it
 * The propability of CTCF occupancy (we used 0.5 in our paper)
 * The output simulation path where the simulations are stored
 These 1D simulations were then used as inputs for LAMMPS to simulate 3D polymer dynamics, together with loop extrusion.
-As an example, we provide "runSimulationAsInPaper.sh" file that show how to run simulations. We set in this file the parameters that fit experimental data, and performed N=2 simulations per cell line. The conditioons selected run in less than 2 minutes if showplot="False", and less than 10 minutes if showplot="True"  It creates a set of folders (one folder for each condition) including "run_Multiple_loop.sh" that can then be run on a cluster for polymer simulation with LAMMPS.
+As an example, we provide "runSimulationAsInPaper.sh" file that show how to run simulations. We set in this file the parameters that fit experimental data, and performed N=2 simulations per cell line. The conditions selected run in less than 2 minutes if showplot="False", and less than 10 minutes if showplot="True". It creates a set of folders (one folder for each condition) including "run_Multiple_loop.sh" that can then be run on a cluster for polymer simulation with LAMMPS.
 
 
 
