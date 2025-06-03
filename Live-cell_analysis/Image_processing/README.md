@@ -14,7 +14,7 @@ This package is developed in python and requires the following libraries. You ca
 
 ## Usage
 
-The files are executed in the following order to track spots in 2-channel images. The images have to be in tif format in the following order: TZCYX. We profide "runExample.sh" file that runs the tracking on an example.
+The files are executed in the following order to track spots in 2-channel images. The images have to be in tif format in the following order: TZCYX. We profide "runExample.sh" file that runs the tracking on a small example (in around 15 seconds without accounting tracking and pairing with trackmate plugin in FIJI).
 
 
 1. replicatedSpotDetection.py takes a 5D .tif image as input and outputs a 2D histogram of localizations saved in .tif. The intensities of the pixels in the output image indicate whether the localized spots are elongated or not. This script was used to guide the filtering of replicated spots.
