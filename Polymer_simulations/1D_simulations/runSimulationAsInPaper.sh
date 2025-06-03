@@ -5,7 +5,7 @@
 
 #this script runs in 1 min if showPlot="False" or 5 min if showPlot="False"
 
-number_simul=2
+number_simul=1 #(N-1)
 
 
 
