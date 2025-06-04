@@ -19,7 +19,7 @@ The files are executed in the following order to track spots in 2-channel images
 
 1. replicatedSpotDetection.py takes a 5D .tif image as input and outputs a 2D histogram of localizations saved in .tif. The intensities of the pixels in the output image indicate whether the localized spots are elongated or not. This script was used to guide the filtering of replicated spots.
 
-2. Compute chromatic aberrations using [Chromagnon](https://github.com/macronucleus/Chromagnon). To compute it, you need 3D images where the same structure is labeled with two colors.
+2. Compute chromatic aberrations using [Chromagnon](https://github.com/macronucleus/Chromagnon). To compute it, you need a 3D image where the same structure is labeled with two colors.
 
 4. shift_correction.py takes a tif image as input and the registration parameters provided by [Chromagnon](https://github.com/macronucleus/Chromagnon) and outputs a .tif image at the same location corrected for temporal XY shifts. The correction is at the pixel resolution. No interpolation is performed. This correction allows to optimize the tracking of spots.
 
