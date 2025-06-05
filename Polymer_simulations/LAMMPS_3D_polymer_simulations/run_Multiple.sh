@@ -1,11 +1,11 @@
 #!/bin/bash
 
-for i in {1..50}
+for i in {1..2}
 do
    mkdir set$i
 done
 
-for i in {1..50}
+for i in {1..2}
 do
    cp simIndex=$((i-1)).in set$i
    cp interactions set$i

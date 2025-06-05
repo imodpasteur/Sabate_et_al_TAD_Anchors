@@ -1,23 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Nov 10 09:37:33 2023
-
-@author: thoma
+@author: Thomas Sabaté
+For usage of the code, please cite: Sabaté et al, Uniform dynamics of cohesin-mediated loop extrusion, Nature Genetics, 2025
 """
 
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import sys
 import math
 import itertools
 from matplotlib.patches import Rectangle
 from matplotlib import ticker
 from random import sample
-
-sys.path.append(r"/Volumes/Imod-grenier/Thomas/Documents/Papiers/Live/Prep_Submission/Code_to_submit/Utils_Live.py")
 from Utils_Live import *
-
 
 
 def get_closing_rates_based_on_criterion(crit, threshold_t_extr):
@@ -44,7 +39,6 @@ def get_closing_rates_based_on_criterion(crit, threshold_t_extr):
     else:               # Not sufficient data to do the fitting
         closing_rate = np.nan
     return closing_rate
-
 
 
 def get_squared_distances_minus_localization_errors_from_distances_and_scores(distances, scores, mean_Std_prec):
@@ -87,10 +81,10 @@ def get_squared_distances_minus_localization_errors_from_distances_and_scores(di
     return norm_mean_weighted_dist, sem_weighted
 
 
-
 # %% Load QC data
+# Here, indicate the path to the .csv filtered distance time series files, which can be downloaded on Zenodo.
 
-Cell_line = 'L2'
+Cell_line = 'L1'
 
 if Cell_line == 'L1':
     tracks_WT = pd.read_csv('/Path_To_Filtered_Dataset/L1_NoAuxin_QC.csv', sep=';')
@@ -175,7 +169,7 @@ closed_lifetime_list_in_min = [i / conversion_to_min for i in closed_lifetime_li
 closed_lifetime_list_in_min_deplete = [i / conversion_to_min for i in closed_lifetime_list_deplete]
 closed_lifetime_list_in_min_adjacent = [i / conversion_to_min for i in closed_lifetime_list_adjacent]
 
-# %%% MLE fitting of lifetimes
+# %%% MLE fitting of lifetimes (as in Gabriele et al, Science, 2022)
 
 mean, low, high = MLE_censored_exponential(closed_lifetime_list_in_min, Censored_list, 0.95)
 print('No Auxin mean lifetime = ' + str(round(mean, 2)) + ' min')
@@ -213,7 +207,7 @@ plt.xlim((0, 80))
 plt.legend(fontsize=22, frameon=False)
 
 # %% Fit closing rate
-# Use a more conservation segmentation of proximal state for closing rate fitting
+# Use a more conservative segmentation of proximal states for closing rate fitting
 if Cell_line == 'L1':
     thresh_space_CR = 0.13631379864169063
 if Cell_line == 'L2':
@@ -694,3 +688,5 @@ print('UNTREATED CELLS: Fraction Proximal=%.3f, Fraction extruding=%.2f, Fractio
 print('AUXIN-TREATED CELLS: Fraction Proximal=%.3f, Fraction extruding=%.2f, Fraction open=%.2f' % (Fitted_Open[0], Fitted_Open[1], Fitted_Open[2]))
 
 
+end = time.time()
+print(end - start)

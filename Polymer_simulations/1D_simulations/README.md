@@ -30,7 +30,7 @@ As an example, we provide "runSimulationAsInPaper.sh" file that show how to run 
 
 
 
-To simulate new 1D polymers with your own set of parameters, you may use the class Chromatin.py. It allows to simulate a piece of chromatin in 1D. Run example.py file in order to see how to use it.
+To simulate loop extrusion in 1D with your own set of parameters, you may use the class Chromatin.py. Run the 'example.py' file to see how to use it.
 The Chromatin.py constructor uses as input:
 * processivityKb (average amount of extrusion per loop, in kb)
 * cohesinNumberPerMb (density of cohesin per Mb)
