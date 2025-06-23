@@ -1,5 +1,5 @@
 # Quantification
-LiveCell_Analysis.py quantifies distance time series of TAD anchors. 
+LiveCell_Analysis.py quantifies distance time series of TAD anchors. The datasets can be downloaded on Zenodo.
 The script allows to compute the following (in about 2 min):
 -	Proximal state segmentation
 -	Proximal state fraction
