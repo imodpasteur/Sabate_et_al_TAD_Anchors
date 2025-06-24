@@ -6,7 +6,7 @@ The script allows to compute the following (in about 2 min):
 -	Proximal state frequency
 -	Proximal state lifetime
 -	Closing rate
--	Fractions of proximal, extruding and open states derived from an analytical model of coordinate difference distribution.
+-	Fractions of proximal, extruding and open states derived from an analytical model of anchor coordinate difference distribution.
 
 Other files contain functions used in LiveCell_Analysis.py.
 
