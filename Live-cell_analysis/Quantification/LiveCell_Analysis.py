@@ -82,7 +82,7 @@ def get_squared_distances_minus_localization_errors_from_distances_and_scores(di
 
 
 # %% Load QC data
-# Here, indicate the path to the .csv filtered distance time series files, which can be downloaded on Zenodo.
+# Here, indicate the path to the .csv filtered distance time series files, which can be downloaded on Zenodo: 10.5281/zenodo.15723942.
 
 Cell_line = 'L1'
 
@@ -149,7 +149,7 @@ print('Proximal fraction adjacent = ', list(filtered_adjacent['Proximal_filt']).
 
 # %% Frequency
 
-s_frame = 30    # 30s/frame
+s_frame = 30    # 30s/frame for the 'low-frequency' dataset, 9s/frame for the 'high-frequency' dataset
 mean_frequency = get_closed_state_frequency(filtered_WT.copy(), s_frame)
 mean_frequency_deplete = get_closed_state_frequency(filtered_deplete.copy(), s_frame)
 mean_frequency_adjacent = get_closed_state_frequency(filtered_adjacent.copy(), s_frame)
@@ -307,7 +307,7 @@ plt.ylim((0, 0.2))
 
 data = filtered_WT.copy()
 List_track_pair = list(data['Track_pair'].unique())
-fps = 1/30   # frame / s
+fps = 1 / s_frame   # frame / s
 nbr_tracks_to_plot = 5
 track_idx_to_plot = random.sample(List_track_pair, k=nbr_tracks_to_plot)
 for pair in track_idx_to_plot:
@@ -353,8 +353,8 @@ for pair in track_idx_to_plot:
 # %%% Plot randomly chosen tracks together
 
 to_plot = filtered_WT
-fps = 1/30
-to_plot['Frame_in_s'] = (to_plot['Frame'] * 0.5)
+fps = 1/s_frame
+to_plot['Frame_in_s'] = (to_plot['Frame'] * (s_frame / 60))
 all_pairs = list(to_plot['Track_pair'].unique())
 nbr_sample = 5
 random_choice = sample(all_pairs, nbr_sample)
