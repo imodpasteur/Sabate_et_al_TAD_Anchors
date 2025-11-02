@@ -1,4 +1,4 @@
-# Micro-C analysis
+# Capture Micro-C analysis
 
 Code to analyze raw sequencing reads from Capture Micro-C and to detect and score TADs and loops in the GSE104333 dataset from Rao et al, Cell, 2017.<br>
 
@@ -13,7 +13,7 @@ Code to analyze raw sequencing reads from Capture Micro-C and to detect and scor
 6. Cooler v0.9.1
 
 
-## Micro Capture-C sequencing processing
+## Capture Micro-C sequencing processing
 
 Raw sequencing reads from Capture Micro-C were analyzed by Dr. Michael Szalay
 
