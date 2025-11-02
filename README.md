@@ -2,7 +2,7 @@
 Python scripts to quantitatively characterize cohesin-mediated loop extrusion from microscopy images and polymer simulations.
 
 ## Version used in the paper
-The release v0 was used in the paper.
+The release v0 was used in the publication.
 
 ## License
 
